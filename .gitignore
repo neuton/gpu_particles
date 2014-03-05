@@ -1,0 +1,8 @@
+*.pyc
+*.bat
+*.log
+*.txt
+*.o
+*.exe
+*.dll
+ogre.cfg
