@@ -7,7 +7,7 @@ static cl_var gpu_r, gpu_v, gpu_a, gpu_m, gpu_n;
 
 extern void gpu_init(const uint n, const real m[], const v3r r[], const v3r v[])
 {
-	opencl_init(GPU);
+	opencl_init(CPU);
 	cl_program program = opencl_create_program("kernel.cl", NULL);
 	kernel_compute_forces = opencl_create_kernel(program, "compute_forces");
 	kernel_update_positions = opencl_create_kernel(program, "update_positions");

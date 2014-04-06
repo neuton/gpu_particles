@@ -3,6 +3,7 @@
 *.log
 *.txt
 *.o
-*.exe
-*.dll
-ogre.cfg
+*~
+test.exe
+host.dll
+*.cfg

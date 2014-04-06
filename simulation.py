@@ -94,7 +94,7 @@ class ParticlesContainer(SceneObject):
 from ctypes import cdll, Structure, c_float, c_uint, byref
 class V3r(Structure):
     _fields_ = [("x", c_float), ("y", c_float), ("z", c_float)]
-host = cdll.LoadLibrary('host.dll')
+host = cdll.LoadLibrary('./host.dll')
 
 class SimulationScene(Scene):
     """
@@ -102,7 +102,7 @@ class SimulationScene(Scene):
     """
     
     def init(self):
-        n = 10000
+        n = 1000
         sm = self.sceneManager
         self.frame = Frame(sm, [50,50,4])
         self.particlesContainer = ParticlesContainer(sm, [50,50,4], n, 0.3)
