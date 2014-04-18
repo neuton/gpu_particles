@@ -1,0 +1,15 @@
+## Here are macroses definitions included in Makefile.
+## You may edit this file in case You have troubles building.
+## Note: make sure Your architecture bitness You set here matches Your C compiler bitness and Your python interpreter bitness.
+
+BUILDTEST = no
+
+CPU_ARCHITECTURE = 32
+
+CC = gcc
+#CC = C:\MinGW\bin\gcc
+
+CCFLAGS = -Wall
+
+TEST = test
+LIB = host

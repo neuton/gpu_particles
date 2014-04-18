@@ -9,20 +9,17 @@ real sqr(real a)
 
 v3r add(v3r a, v3r b)
 {
-	v3r t = {a.x + b.x, a.y + b.y, a.z + b.z};
-	return t;
+	return (v3r){a.x + b.x, a.y + b.y, a.z + b.z};
 }
 
 v3r sub(v3r a, v3r b)
 {
-	v3r t = {a.x - b.x, a.y - b.y, a.z - b.z};
-	return t;
+	return (v3r){a.x - b.x, a.y - b.y, a.z - b.z};
 }
 
 v3r mul(real a, v3r v)
 {
-	v3r t = {a*v.x, a*v.y, a*v.z};
-	return t;
+	return (v3r){a*v.x, a*v.y, a*v.z};
 }
 
 real len(v3r r)

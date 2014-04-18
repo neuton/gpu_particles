@@ -102,7 +102,7 @@ class SimulationScene(Scene):
     """
     
     def init(self):
-        n = 1000
+        n = 5000
         sm = self.sceneManager
         self.frame = Frame(sm, [50,50,4])
         self.particlesContainer = ParticlesContainer(sm, [50,50,4], n, 0.3)
