@@ -2,21 +2,6 @@
 
 from framework import *
 from simulation import SimulationScene
-import platform, sys, os.path
-
-
-def set_resources_paths():
-    cwd = os.path.dirname(sys.argv[0])
-    if platform.system() == 'Windows':
-        dll = '.dll'
-    else:
-        dll = '.so'
-    with open(os.path.join(cwd, 'plugins.cfg'), 'w') as plugins_file:
-        plugins_file.write('PluginFolder=' + os.path.join(cwd, 'plugins') +
-            '\nPlugin=RenderSystem_GL' + dll + '\n')
-    with open(os.path.join(cwd, 'resources.cfg'), 'w') as resources_file:
-        resources_file.write('[Bootstrap]\nZip=' + os.path.join(cwd, 'resources/OgreCore.zip') +
-        '\n\n[General]\nFileSystem=' + os.path.join(cwd, 'resources') + '\n')
 
 
 class FrameListener(OgreFrameListener):
@@ -78,12 +63,10 @@ class Application(OgreApplication):
     def _createFrameListener(self):
         self.frameListener = FrameListener(self)
         self.root.addFrameListener(self.frameListener)
-        self.frameListener.showDebugOverlay(False)
 
 
 if __name__ == '__main__':
     try:
-        set_resources_paths()
         app = Application()
         app.go()
     except ogre.OgreException, e:

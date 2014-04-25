@@ -46,20 +46,6 @@ class Frame(SceneObject):
         return mesh
 
 
-#class Particle():
-#    def __init__(self, container, r=Vector3(0.,0.,0.)):
-#        self.billboard = container.mesh.createBillboard(r)
-#        self.m = 1.
-#        self.v = Vector3(0.,0.,0.)
-#        self.a = Vector3(0.,0.,0.)
-#    
-#    def getPosition(self):
-#        return self.billboard.getPosition()
-#    
-#    def setPosition(self, r):
-#        self.billboard.setPosition(r)
-
-
 from random import random
 
 class ParticlesContainer(SceneObject):
@@ -71,16 +57,14 @@ class ParticlesContainer(SceneObject):
         if len(size) != 3:
             size = [1, 1, 1]
         self.size = size
-        c = self.mesh
-        c.setDefaultDimensions(scale, scale)
-        #c.setMaterialName('red')
+        self.mesh.setDefaultDimensions(scale, scale)
         self.n = count
         self.particles = []
         for i in range(count):
             x = (random()-0.5)*size[0]
             y = (random()-0.5)*size[1]
             z = (random()-0.5)*size[2]
-            self.particles.append(c.createBillboard(Vector3(x,y,z)))
+            self.particles.append(self.mesh.createBillboard(Vector3(x,y,z)))
     
     def setPositions(self, r_array):
         for i in range(self.n):
@@ -88,7 +72,9 @@ class ParticlesContainer(SceneObject):
             self.particles[i].setPosition(Vector3(r.x,r.y,r.z))
     
     def _createMesh(self):
-        return self.sceneManager.createBillboardSet()
+        bs = self.sceneManager.createBillboardSet()
+        bs.setMaterialName("particle")
+        return bs
 
 
 from ctypes import cdll, Structure, c_float, c_uint, byref
@@ -102,10 +88,11 @@ class SimulationScene(Scene):
     """
     
     def init(self):
-        n = 5000
+        self.nn = 20
+        n = 2000
         sm = self.sceneManager
         self.frame = Frame(sm, [50,50,4])
-        self.particlesContainer = ParticlesContainer(sm, [50,50,4], n, 0.3)
+        self.particlesContainer = ParticlesContainer(sm, [50,50,4], n)
         c = self.particlesContainer
         V3rArray = V3r*n
         FloatArray = c_float*n
@@ -121,8 +108,8 @@ class SimulationScene(Scene):
         v = self.v_array
         n = self.particlesContainer.n
         for i in range(n):
-            v[i].x += -p[i].getPosition().y * 0.5
-            v[i].y += p[i].getPosition().x * 0.5
+            v[i].x += -p[i].getPosition().y * 0.3
+            v[i].y += p[i].getPosition().x * 0.3
     
     def _two_boxes(self):
         p = self.particlesContainer.particles
@@ -141,5 +128,7 @@ class SimulationScene(Scene):
         pass
     
     def update(self, dt):
-        host.gpu_update(byref(self.r_array))
+        for i in range(self.nn):
+            host.gpu_update()
+        host.gpu_getval(byref(self.r_array))
         self.particlesContainer.setPositions(self.r_array)

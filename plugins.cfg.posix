@@ -1,0 +1,2 @@
+PluginFolder=plugins
+Plugin=RenderSystem_GL.so

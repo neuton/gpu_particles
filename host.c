@@ -21,9 +21,13 @@ extern void gpu_init(const uint n, const real m[], const v3r r[], const v3r v[])
 	opencl_set_global_ws(1, n);
 }
 
-extern void gpu_update(v3r r[])
+extern void gpu_update()
 {
 	opencl_run_kernel(kernel_compute_forces);
 	opencl_run_kernel(kernel_update_positions);
+}
+
+extern void gpu_getval(v3r r[])
+{
 	opencl_get_var(gpu_r, r);
 }

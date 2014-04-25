@@ -2,8 +2,10 @@ import sys
 import os
 import os.path
 
-import ogre.renderer.OGRE as ogre
-import ogre.io.OIS as OIS
+import OGRE as ogre
+import OIS
+#import ogre.renderer.OGRE as ogre
+#import ogre.io.OIS as OIS
 
 
 def getPluginPath():
@@ -50,25 +52,25 @@ class OgreApplication(object):
 
     def _setUp(self):
         """This sets up the ogre application"""
-
+        
         pluginFile = getPluginPath()  # option here to switch to manually loading file if it doesn't exist
         self.root = ogre.Root(pluginFile)
         self.root.setFrameSmoothingPeriod(5.0)
-
+        
+        self._chooseSceneManager()
+        
         self._setUpResources()
         if not self._configure():
             return False
-
-        self._chooseSceneManager()
+        self._loadResources()
+        
+        ogre.TextureManager.getSingleton().setDefaultNumMipmaps(5)
+        
         self._createScene()
         if self.camera is None:
             self._createDefaultCamera()
         self._createViewports()
-
-        ogre.TextureManager.getSingleton().setDefaultNumMipmaps(5)
-
-        self._loadResources()
-
+        
         self._createFrameListener()
         return True
 
@@ -131,31 +133,8 @@ class OgreApplication(object):
     def _createFrameListener(self):
         """Creates the FrameListener."""
         self.frameListener = OgreFrameListener(self.renderWindow, self.camera)
-        self.frameListener.unittest = self.unittest
-        self.frameListener.showDebugOverlay(True)
         self.root.addFrameListener(self.frameListener)
 
-
-def isUnitTest():
-    """ use an environment variable to define that we need to do unittesting"""
-    env = os.environ
-    if env.has_key ("PythonOgreUnitTestPath"):
-        return True
-    return False
-    
-def UnitTest_Duration():
-    return 5
-
-def UnitTest_Screenshot():
-    if isUnitTest():
-        env = os.environ
-        path = env["PythonOgreUnitTestPath"]
-        parentpath = os.getcwd().split(os.path.sep)[-1] # get the last part of the parent directory
-        filename = parentpath+'.'+ sys.modules['__main__'].__file__.split('.')[0] # file name is parent.demo.xx
-        path = os.path.join ( path, filename )
-        return path
-    else:
-        return "test"
 
 class OgreFrameListener(ogre.FrameListener, ogre.WindowEventListener):
     """A default frame listener, which takes care of basic mouse and keyboard
@@ -174,7 +153,6 @@ class OgreFrameListener(ogre.FrameListener, ogre.WindowEventListener):
         self.rotationScale = 0.0
         self.translateVector = ogre.Vector3(0.0,0.0,0.0)
         self.filtering = ogre.TFO_BILINEAR
-        self.showDebugOverlay(True)
         self.rotateSpeed =  ogre.Degree(36)
         self.moveSpeed = 100.0
         self.rotationSpeed = 8.0
@@ -185,13 +163,6 @@ class OgreFrameListener(ogre.FrameListener, ogre.WindowEventListener):
         self.rotationY = ogre.Degree(0.0)
         self.bufferedJoy = bufferedJoy
         self.shouldQuit = False # set to True to exit..
-        self.MenuMode = False   # lets understand a simple menu function
-        
-        self.unittest = isUnitTest()
-        self.unittest_duration = UnitTest_Duration()  # seconds before screen shot a exit
-#         self.unittest_screenshot = sys.modules['__main__'].__file__.split('.')[0]     # file name for unittest screenshot
-        self.unittest_screenshot = UnitTest_Screenshot()
-        ## we can tell if we are using OgreRefapp based upon the camera class
         
         if self.camera.__class__ == ogre.Camera:
             self.RefAppEnable = False
@@ -251,15 +222,9 @@ class OgreFrameListener(ogre.FrameListener, ogre.WindowEventListener):
          #Set initial mouse clipping size
          self.windowResized(self.renderWindow)
          
-         self.showDebugOverlay(True)
-         
          #Register as a Window listener
          ogre.WindowEventUtilities.addWindowEventListener(self.renderWindow, self);
          
-         
-         
-    def setMenuMode(self, mode):
-        self.MenuMode = mode
 
     def _updateSimulation(self, frameEvent):
         # create a real version of this to update the simulation
@@ -287,11 +252,6 @@ class OgreFrameListener(ogre.FrameListener, ogre.WindowEventListener):
     def frameRenderingQueued ( self, evt ):
         if(self.renderWindow.isClosed() or self.shouldQuit ):
             return False
-        if self.unittest:
-            self.unittest_duration -= evt.timeSinceLastFrame 
-            if self.unittest_duration < 0:
-                self.renderWindow.writeContentsToFile(self.unittest_screenshot + '.jpg')
-                return False                     
         #Need to capture/update each device - this will also trigger any listeners
         self.Keyboard.capture()    
         self.Mouse.capture()
@@ -328,19 +288,7 @@ class OgreFrameListener(ogre.FrameListener, ogre.WindowEventListener):
         
         self._updateSimulation(evt)
         return True
-
-    def showDebugOverlay(self, show):
-        """Turns the debug overlay (frame statistics) on or off."""
-        overlay = ogre.OverlayManager.getSingleton().getByName('POCore/DebugOverlay')
-        if overlay is None:
-            self.statisticsOn = False
-            ogre.LogManager.getSingleton().logMessage( "ERROR in framework.py: Could not find overlay POCore/DebugOverlay" )
-            return
-        if show:
-            overlay.show()
-        else:
-            overlay.hide()
-
+    
     def _processUnbufferedKeyInput(self, frameEvent):
         if self.Keyboard.isKeyDown(OIS.KC_A):
             self.translateVector.x = -self.moveScale
@@ -453,26 +401,3 @@ class OgreFrameListener(ogre.FrameListener, ogre.WindowEventListener):
 #             self.camera.translate(self.translateVector) # for using OgreRefApp
 #         except AttributeError:
         self.camera.moveRelative(self.translateVector)
-
-    def _updateStatistics(self):
-        statistics = self.renderWindow
-        self._setGuiCaption('POCore/AverageFps', 'Avg FPS: %u' % statistics.getAverageFPS())
-        self._setGuiCaption('POCore/CurrFps', 'FPS: %u' % statistics.getLastFPS())
-#         self._setGuiCaption('POCore/BestFps',
-#                              'Best FPS: %f %d ms' % (statistics.getBestFPS(), statistics.getBestFrameTime()))
-#         self._setGuiCaption('POCore/WorstFps',
-#                              'Worst FPS: %f %d ms' % (statistics.getWorstFPS(), statistics.getWorstFrameTime()))
-        self._setGuiCaption('POCore/NumTris', 'Trianges: %u' % statistics.getTriangleCount())
-        self._setGuiCaption('POCore/NumBatches', 'Batches: %u' % statistics.batchCount)
-        
-        self._setGuiCaption('POCore/DebugText', OgreApplication.debugText)
-
-    def _setGuiCaption(self, elementName, text):
-        element = ogre.OverlayManager.getSingleton().getOverlayElement(elementName, False)
-        ##d=ogre.UTFString("hell0")
-        ##element.setCaption(d)
-        
-        #element.caption="hello"
-        
-        #element.setCaption("help")
-        element.setCaption(text) # ogre.UTFString(text))

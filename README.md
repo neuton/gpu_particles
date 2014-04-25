@@ -4,13 +4,14 @@ A simple python (with python-ogre) + C + OpenCL (GPU/CPU) implementation of simu
 
 Requirements
 --------------
-- Windows/Linux
+- Windows/Ubuntu
 - AMD APP SDK
-- gcc (or some similar)
+- gcc
 - make
 - python
-- python-ogre
+- python-ogre (OGRE, OIS: https://www.dropbox.com/sh/40ke6pzm5tfbc6u/uwDKB2S4V-)
 
 How to run
 --------------
 make && main.py
+(press [Enter] to start/stop simulation; use mouse/[+]/[-] to change point of view)

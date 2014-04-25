@@ -1,0 +1,29 @@
+material red
+{
+   technique
+   {
+      pass
+      {
+         ambient 0 0 0 0
+         diffuse 0 0 0 0
+		 emissive 1 0 0 1
+      }
+   }
+}
+
+material particle
+{
+   technique
+   {
+      pass
+      {
+         scene_blend add
+         lighting off
+		 depth_write off
+         texture_unit
+         {
+            texture flare.png
+         }
+      }
+   }
+}

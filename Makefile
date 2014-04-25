@@ -14,8 +14,8 @@ else
 	ERROR = $(error AMDAPPSDKROOT not defined)
 endif
 
-ifeq ($(OSTYPE), linux-gnu)
-	CCFLAGS = CCFLAGS -fPIC
+ifneq ($(OS), Windows_NT)
+	CCFLAGS := $(CCFLAGS) -fPIC
 endif
 
 .PHONY: all, clean
