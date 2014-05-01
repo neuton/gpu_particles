@@ -2,15 +2,13 @@
 ## You may edit this file in case You have troubles building.
 ## Note: make sure Your architecture bitness You set here matches Your C compiler bitness and Your python interpreter bitness.
 
-CPU_ARCHITECTURE = 64
-#CPU_ARCHITECTURE = 32
-
+CPU_ARCHITECTURE = 32
 CC = gcc
-#CC = C:\MinGW\bin\gcc
-
 CCFLAGS = -Wall
-
 BUILDTEST = no
-
 TEST = test
 LIB = host
+
+## please, manually define OpenCL SDK paths here in case You use some other than AMD APP SDK
+OPENCL_INCLUDE_PATH =
+OPENCL_LIB_PATH =

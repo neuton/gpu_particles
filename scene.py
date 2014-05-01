@@ -1,5 +1,7 @@
-import ogre.renderer.OGRE as ogre
-from ogre.renderer.OGRE import Vector3
+import OGRE as ogre
+from OGRE import Vector3
+#import ogre.renderer.OGRE as ogre
+#from ogre.renderer.OGRE import Vector3
 
 
 class Scene():

@@ -2,8 +2,8 @@ MAKEINC = builddef.txt
 
 include $(MAKEINC)
 
+ERROR =
 ifdef AMDAPPSDKROOT
-	ERROR =
 	CLINC = $(AMDAPPSDKROOT)/include
 	ifeq ($(CPU_ARCHITECTURE), 64)
 		CLLIB = $(AMDAPPSDKROOT)/lib/x86_64
@@ -11,11 +11,23 @@ ifdef AMDAPPSDKROOT
 		CLLIB = $(AMDAPPSDKROOT)/lib/x86
 	endif
 else
-	ERROR = $(error AMDAPPSDKROOT not defined)
+	ifdef OPENCL_INCLUDE_PATH
+		CLINC = $(OPENCL_INCLUDE_PATH)
+		ifdef OPENCL_LIB_PATH
+			CLLIB = $(OPENCL_LIB_PATH)
+		else
+			ERROR = $(error AMDAPPSDKROOT not defined; please, define OPENCL_LIB_PATH)
+		endif
+	else
+		ERROR = $(error AMDAPPSDKROOT not defined; please, define OPENCL_INCLUDE_PATH)
+	endif
 endif
 
 ifneq ($(OS), Windows_NT)
 	CCFLAGS := $(CCFLAGS) -fPIC
+	SHELL = /bin/sh
+else
+	SHELL = cmd
 endif
 
 .PHONY: all, clean
@@ -25,6 +37,7 @@ all: $(TEST).exe $(LIB).dll
 else
 all: $(LIB).dll
 endif
+	@echo all done
 
 $(LIB).dll: $(LIB).o opencl.o cl_error.o
 	$(ERROR)
@@ -51,7 +64,7 @@ $(TEST).exe: $(TEST).o opencl.o cl_error.o
 	@echo making $(TEST) ...
 	@$(CC) $(TEST).o opencl.o cl_error.o -o $(TEST).exe -L"$(CLLIB)" -lOpenCL
 
-$(TEST).o: $(TEST).c opencl.h Makefile $(MAKEINC)
+$(TEST).o: $(TEST).c $(LIB).c opencl.h Makefile $(MAKEINC)
 	$(ERROR)
 	@echo making $(TEST).o ...
 	@$(CC) -Wall -c -I"$(CLINC)" $(TEST).c -o $(TEST).o
@@ -63,3 +76,4 @@ ifeq ($(OS), Windows_NT)
 else
 	@rm -f *.o
 endif
+	@echo all cleaned
