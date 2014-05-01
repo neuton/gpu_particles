@@ -5,7 +5,7 @@ A simple python (with python-ogre) + C + OpenCL (GPU/CPU) implementation of simu
 Requirements
 --------------
 - Windows/Ubuntu
-- AMD APP SDK
+- OpenCL SDK
 - gcc
 - make
 - python
