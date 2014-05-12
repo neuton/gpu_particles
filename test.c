@@ -26,21 +26,24 @@ int main()
 	gpu_init(n,64,m,r,v);
 	time_t t0;
 	real dt_gpu, dt_cpu;
-	
+
+	for (i=0; i<5*nn; i++)	// for "heating up" GPU
+		gpu_update();
+	opencl_sync();
 	t0 = clock();
 	for (i=0; i<nn; i++)
 		gpu_update();
 	opencl_sync();
 	dt_gpu = difftime(clock(), t0)/CLOCKS_PER_SEC;
-	printf("GPU update: %f sec\n", dt_gpu);
-	
+	printf("GPU update: %.3f sec\n", dt_gpu);
+
 	t0 = clock();
 	for (i=0; i<nn; i++)
 		cpu_update(n,m,r,v);
 	dt_cpu = difftime(clock(), t0)/CLOCKS_PER_SEC;
-	printf("CPU update: %f sec\n", dt_cpu);
+	printf("CPU update: %.3f sec\n", dt_cpu);
 	
-	printf("x%.1f\n", dt_cpu/dt_gpu);
+	printf("\nboost: x%.1f\n", dt_cpu/dt_gpu);
 	
 	return 0;
 }

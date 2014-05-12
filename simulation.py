@@ -148,21 +148,21 @@ class SimulationScene(Scene):
             self.update_cpu(dt)
     
     def update_gpu(self, dt):
-        t0 = clock()
+        #t0 = clock()
         for i in range(self.kernel_iterations):
             host.gpu_update()
         host.gpu_getval(byref(self.r_array))
-        t1 = clock()
+        #t1 = clock()
         self.particlesContainer.setPositions(self.r_array)
-        t2 = clock()
-        print t1-t0, t2-t1
+        #t2 = clock()
+        #print t1-t0, t2-t1
     
     def update_cpu(self, dt):
         n = len(self.r_array)
-        t0 = clock()
+        #t0 = clock()
         for i in range(self.kernel_iterations):
             host.cpu_update(c_uint(n), byref(self.m_array), byref(self.r_array), byref(self.v_array))
-        t1 = clock()
+        #t1 = clock()
         self.particlesContainer.setPositions(self.r_array)
-        t2 = clock()
-        print t1-t0, t2-t1
+        #t2 = clock()
+        #print t1-t0, t2-t1

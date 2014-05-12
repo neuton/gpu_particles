@@ -18,11 +18,10 @@ void compute_forces(__global const v3r * r,
 	const uint id = get_global_id(0), lid = get_local_id(0), n = get_global_size(0);
 	__local v3r lr[ln], lm[ln];
 	v3r dr, r0 = r[id], f = (v3r)(0);
-	uint i, k, k1;
+	uint i, k = get_group_id(0)*ln;
+	const uint k_end = (k+n-ln) % n;
 	real d;
-	k = get_group_id(0)*ln;
-	k1 = k>0 ? k-ln : n-ln;
-	while (1)
+	while (true)
 	{
 		lr[lid] = r[lid+k];
 		lm[lid] = m[lid+k];
@@ -34,7 +33,7 @@ void compute_forces(__global const v3r * r,
 			if (d>R)
 				f += dr * lm[i]/(d*d*d);
 		}
-		if (k==k1) break;
+		if (k==k_end) break;
 		k = (k+ln)%n;
 	}
 	a[id] = f;
