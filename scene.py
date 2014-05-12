@@ -9,10 +9,6 @@ class Scene():
     
     def __init__(self, sceneManager):
         self.sceneManager = sceneManager
-        self.init()
-    
-    def init(self):
-        pass
     
     def reinit(self):
         pass

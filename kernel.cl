@@ -1,63 +1,51 @@
 #define real float
-
-typedef struct{real x, y, z;} v3r;
-
-real sqr(real a)
-{
-	return a*a;
-}
-
-v3r add(v3r a, v3r b)
-{
-	return (v3r){a.x + b.x, a.y + b.y, a.z + b.z};
-}
-
-v3r sub(v3r a, v3r b)
-{
-	return (v3r){a.x - b.x, a.y - b.y, a.z - b.z};
-}
-
-v3r mul(real a, v3r v)
-{
-	return (v3r){a*v.x, a*v.y, a*v.z};
-}
+#define v3r float3	//! on CPU vectorization works ~2 times slower than simple struct???
 
 real len(v3r r)
 {
-	return sqrt(sqr(r.x)+sqr(r.y)+sqr(r.z));
+	v3r r2 = r*r;
+	return sqrt(r2.x + r2.y + r2.z);
 }
 
-#define G 1
-#define R 1
-__kernel void compute_forces(const uint n, __global const v3r * r, __global const real * m, __global v3r * a)
+#define ln 64	// work group size
+#define R 1	// closest radius
+
+__kernel __attribute__((reqd_work_group_size(ln, 1, 1)))
+void compute_forces(__global const v3r * r,
+					__constant const real * m,
+					__global v3r * a)
 {
-	uint id = get_global_id(0);
-	if (id<n)
+	const uint id = get_global_id(0), lid = get_local_id(0), n = get_global_size(0);
+	__local v3r lr[ln], lm[ln];
+	v3r dr, r0 = r[id], f = (v3r)(0);
+	uint i, k, k1;
+	real d;
+	k = get_group_id(0)*ln;
+	k1 = k>0 ? k-ln : n-ln;
+	while (1)
 	{
-		uint i;
-		real d;
-		v3r dr, r0 = r[id], f = {0.,0.,0.};
-		for (i=0; i<n; i++)
-			if (i!=id)
-			{
-				dr = sub(r[i], r0);
-				d = len(dr);
-				if (d>R)
-					f = add(f, mul(m[i]/(d*d*d), dr));
-//				else
-//					f = add(f, mul(m[i]/(d*R*R), dr));
-			}
-		a[id] = mul(G, f);
+		lr[lid] = r[lid+k];
+		lm[lid] = m[lid+k];
+		barrier(CLK_LOCAL_MEM_FENCE);
+		for (i=0; i<ln; i++)
+		{
+			dr = lr[i] - r0;
+			d = len(dr);
+			if (d>R)
+				f += dr * lm[i]/(d*d*d);
+		}
+		if (k==k1) break;
+		k = (k+ln)%n;
 	}
+	a[id] = f;
 }
 
 #define dt 0.01
-__kernel void update_positions(const uint n, __global v3r * r, __global v3r * v, __global const v3r * a)
+#define dt2 0.005
+
+__kernel void update_positions(__global v3r * r, __global v3r * v, __global const v3r * a)
 {
 	uint id = get_global_id(0);
-	if (id<n)
-	{
-		r[id] = add(r[id], mul(dt, add(v[id], mul(dt*0.5, a[id]))));
-		v[id] = add(v[id], mul(dt, a[id]));
-	}
+	r[id] += dt * (v[id] + dt2 * a[id]);
+	v[id] += dt * a[id];
 }

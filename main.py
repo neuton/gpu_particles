@@ -58,7 +58,7 @@ class Application(OgreApplication):
         camera.lookAt(0, 0, 0)
         self.camera = camera
         self.camNode = camNode
-        self.scene = SimulationScene(sm)
+        self.scene = SimulationScene(sm, "gpu", "rotating box", 2000, 64, 10)
 
     def _createFrameListener(self):
         self.frameListener = FrameListener(self)

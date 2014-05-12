@@ -77,31 +77,45 @@ class ParticlesContainer(SceneObject):
         return bs
 
 
+from time import clock
+
 from ctypes import cdll, Structure, c_float, c_uint, byref
+
 class V3r(Structure):
-    _fields_ = [("x", c_float), ("y", c_float), ("z", c_float)]
+    _fields_ = [("x", c_float), ("y", c_float), ("z", c_float), ("w", c_float)] # cl_float3
+
 host = cdll.LoadLibrary('./host.dll')
+
 
 class SimulationScene(Scene):
     """
         The main scene.
     """
     
-    def init(self):
-        self.nn = 20
-        n = 2000
+    def __init__(self, sceneManager, device, scene_setting, particles_count, work_group_size, kernel_iterations):
+        self.sceneManager = sceneManager
+        self.kernel_iterations = kernel_iterations
+        n = (particles_count-1) / work_group_size * work_group_size + work_group_size
         sm = self.sceneManager
         self.frame = Frame(sm, [50,50,4])
-        self.particlesContainer = ParticlesContainer(sm, [50,50,4], n)
+        self.particlesContainer = ParticlesContainer(sm, [50,50,4], particles_count)
         c = self.particlesContainer
         V3rArray = V3r*n
         FloatArray = c_float*n
-        self.m_array = FloatArray(*[1.]*n)
+        self.m_array = FloatArray(*[0]*n)
+        for i in range(particles_count):
+            self.m_array[i] = c_float(2*random()+0.1)
         self.v_array = V3rArray(*[V3r(0,0,0)]*n)
-        #self._two_boxes()
-        self._rotating_box()
-        self.r_array = V3rArray(*[V3r(c_float(p.getPosition().x), c_float(p.getPosition().y), c_float(p.getPosition().z)) for p in c.particles])
-        host.gpu_init(c_uint(n), byref(self.m_array), byref(self.r_array), byref(self.v_array))
+        self.device = device
+        if scene_setting == "rotating box":
+            self._rotating_box()
+        elif scene_setting == "two boxes":
+            self._two_boxes()
+        self.r_array = V3rArray(*[V3r(0,0,0)]*n)
+        for i in range(c.n):
+            self.r_array[i] = V3r(c.particles[i].getPosition().x, c.particles[i].getPosition().y, c.particles[i].getPosition().z)
+        print 'initializing OpenCL...'
+        host.gpu_init(c_uint(n), c_uint(work_group_size), byref(self.m_array), byref(self.r_array), byref(self.v_array))
     
     def _rotating_box(self):
         p = self.particlesContainer.particles
@@ -128,7 +142,27 @@ class SimulationScene(Scene):
         pass
     
     def update(self, dt):
-        for i in range(self.nn):
+        if self.device == "gpu":
+            self.update_gpu(dt)
+        else:
+            self.update_cpu(dt)
+    
+    def update_gpu(self, dt):
+        t0 = clock()
+        for i in range(self.kernel_iterations):
             host.gpu_update()
         host.gpu_getval(byref(self.r_array))
+        t1 = clock()
         self.particlesContainer.setPositions(self.r_array)
+        t2 = clock()
+        print t1-t0, t2-t1
+    
+    def update_cpu(self, dt):
+        n = len(self.r_array)
+        t0 = clock()
+        for i in range(self.kernel_iterations):
+            host.cpu_update(c_uint(n), byref(self.m_array), byref(self.r_array), byref(self.v_array))
+        t1 = clock()
+        self.particlesContainer.setPositions(self.r_array)
+        t2 = clock()
+        print t1-t0, t2-t1

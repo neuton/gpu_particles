@@ -4,11 +4,11 @@
 
 CPU_ARCHITECTURE = 32
 CC = gcc
-CCFLAGS = -Wall
-BUILDTEST = no
+CCFLAGS = -Wall -O2
 TEST = test
 LIB = host
+BUILDTEST = yes
 
 ## please, manually define OpenCL SDK paths here in case You use some other than AMD APP SDK
-OPENCL_INCLUDE_PATH =
-OPENCL_LIB_PATH =
+#OPENCL_INCLUDE_PATH =
+#OPENCL_LIB_PATH =
