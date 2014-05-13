@@ -69,7 +69,7 @@ class ParticlesContainer(SceneObject):
     def setPositions(self, r_array):
         for i in range(self.n):
             r = r_array[i]
-            self.particles[i].setPosition(Vector3(r.x,r.y,r.z))
+            self.particles[i].setPosition(r.x,r.y,r.z)
     
     def _createMesh(self):
         bs = self.sceneManager.createBillboardSet()
