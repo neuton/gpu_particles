@@ -11,6 +11,25 @@ real len(v3r r)
 #define R 1	// closest radius
 
 __kernel __attribute__((reqd_work_group_size(ln, 1, 1)))
+void compute_forces_naive(	__global const v3r * r,
+							__constant const real * m,
+							__global v3r * a)
+{
+	const uint id = get_global_id(0), n = get_global_size(0);
+	v3r dr, r0 = r[id], f = (v3r)(0);
+	uint i;
+	real d;
+	for (i=0; i<n; i++)
+	{
+		dr = r[i] - r0;
+		d = len(dr);
+		if (d>R)
+			f += dr * m[i]/(d*d*d);
+	}
+	a[id] = f;
+}
+
+__kernel __attribute__((reqd_work_group_size(ln, 1, 1)))
 void compute_forces(__global const v3r * r,
 					__constant const real * m,
 					__global v3r * a)
