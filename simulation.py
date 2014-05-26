@@ -64,7 +64,7 @@ class ParticlesContainer(SceneObject):
             x = (random()-0.5)*size[0]
             y = (random()-0.5)*size[1]
             z = (random()-0.5)*size[2]
-            self.particles.append(self.mesh.createBillboard(Vector3(x,y,z)))
+            self.particles.append(self.mesh.createBillboard(x,y,z))
     
     def setPositions(self, r_array):
         for i in range(self.n):
@@ -82,7 +82,7 @@ from time import clock
 from ctypes import cdll, Structure, c_float, c_uint, byref
 
 class V3r(Structure):
-    _fields_ = [("x", c_float), ("y", c_float), ("z", c_float), ("w", c_float)] # cl_float3
+    _fields_ = [("x", c_float), ("y", c_float), ("z", c_float), ("w", c_float)] # cl_float4
 
 host = cdll.LoadLibrary('./host.dll')
 
@@ -122,8 +122,8 @@ class SimulationScene(Scene):
         v = self.v_array
         n = self.particlesContainer.n
         for i in range(n):
-            v[i].x += -p[i].getPosition().y * 0.3
-            v[i].y += p[i].getPosition().x * 0.3
+            v[i].x += -p[i].getPosition().y * 0.0001 * n
+            v[i].y += p[i].getPosition().x * 0.0001 * n
     
     def _two_boxes(self):
         p = self.particlesContainer.particles
@@ -131,23 +131,23 @@ class SimulationScene(Scene):
         n = self.particlesContainer.n
         for i in range(n/2):
             p[i].setPosition(p[i].getPosition() + Vector3(-60,-30,0))
-            v[i].x = 5
-            v[i].y = -1
+            v[i].x = 0.0005 * n
+            v[i].y = -0.0002 * n
         for i in range(n/2,n):
             p[i].setPosition(p[i].getPosition() + Vector3(60,30,0))
-            v[i].x = -5
-            v[i].y = 1
+            v[i].x = -0.0005 * n
+            v[i].y = 0.0002 * n
     
     def reinit(self):
         pass
     
     def update(self, dt):
         if self.device == "gpu":
-            self.update_gpu(dt)
+            self.update_gpu()
         else:
-            self.update_cpu(dt)
+            self.update_cpu()
     
-    def update_gpu(self, dt):
+    def update_gpu(self):
         #t0 = clock()
         for i in range(self.kernel_iterations):
             host.gpu_update()
@@ -157,7 +157,7 @@ class SimulationScene(Scene):
         #t2 = clock()
         #print t1-t0, t2-t1
     
-    def update_cpu(self, dt):
+    def update_cpu(self):
         n = len(self.r_array)
         #t0 = clock()
         for i in range(self.kernel_iterations):

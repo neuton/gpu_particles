@@ -8,7 +8,8 @@ CCFLAGS = -Wall -O2
 TEST = test
 LIB = host
 BUILDTEST = yes
+OPENMP = no
 
-## please, manually define OpenCL SDK paths here in case You use some other than AMD APP SDK
-#OPENCL_INCLUDE_PATH =
-#OPENCL_LIB_PATH =
+## please, manually define (and uncomment) OpenCL SDK paths here in case You use some other than AMD APP SDK
+#OPENCL_INCLUDE_PATH = C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v3.2\include
+#OPENCL_LIB_PATH = C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v3.2\lib\Win32

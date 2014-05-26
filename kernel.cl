@@ -1,14 +1,14 @@
 #define real float
-#define v3r float3	//! on CPU vectorization works ~2 times slower than simple struct???
+#define v3r float4	//! on CPU vectorization works ~2 times slower than simple struct???
 
-real len(v3r r)
+real sqrlen(v3r r)
 {
 	v3r r2 = r*r;
-	return sqrt(r2.x + r2.y + r2.z);
+	return r2.x + r2.y + r2.z;
 }
 
 #define ln 64	// work group size
-#define R 1	// closest radius
+#define R2 1.5	// closest square radius
 
 __kernel __attribute__((reqd_work_group_size(ln, 1, 1)))
 void compute_forces_naive(	__global const v3r * r,
@@ -18,13 +18,13 @@ void compute_forces_naive(	__global const v3r * r,
 	const uint id = get_global_id(0), n = get_global_size(0);
 	v3r dr, r0 = r[id], f = (v3r)(0);
 	uint i;
-	real d;
+	real d2;
 	for (i=0; i<n; i++)
 	{
 		dr = r[i] - r0;
-		d = len(dr);
-		if (d>R)
-			f += dr * m[i]/(d*d*d);
+		d2 = sqrlen(dr);
+		if (d2>R2)
+			f += dr * m[i]/(d2*sqrt(d2));
 	}
 	a[id] = f;
 }
@@ -39,7 +39,7 @@ void compute_forces(__global const v3r * r,
 	v3r dr, r0 = r[id], f = (v3r)(0);
 	uint i, k = get_group_id(0)*ln;
 	const uint k_end = (k+n-ln) % n;
-	real d;
+	real d2;
 	while (true)
 	{
 		lr[lid] = r[lid+k];
@@ -48,9 +48,9 @@ void compute_forces(__global const v3r * r,
 		for (i=0; i<ln; i++)
 		{
 			dr = lr[i] - r0;
-			d = len(dr);
-			if (d>R)
-				f += dr * lm[i]/(d*d*d);
+			d2 = sqrlen(dr);
+			if (d2>R2)
+				f += dr * lm[i]/(d2*sqrt(d2));// - 2./(d2*d2*sqrt(d2)));
 		}
 		if (k==k_end) break;
 		k = (k+ln)%n;

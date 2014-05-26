@@ -1,6 +1,6 @@
 #include "opencl.h"
 
-#define v3r cl_float3
+#define v3r cl_float4
 
 static cl_kernel kernel_compute_forces, kernel_update_positions;
 static cl_var gpu_r, gpu_v, gpu_a, gpu_m;
@@ -34,16 +34,16 @@ extern void gpu_getval(v3r r[])
 
 
 #include <math.h>
-#define R 1
+#define R2 1.5
 #define dt 0.01
 #define dt2 0.005
 
 extern void cpu_update(const uint n, const real m[], v3r r[], v3r v[])
 {
 	v3r dr, r0, f;
-	real d;
+	real d2;
 	uint i, j;
-	#pragma omp parallel for private(f, dr, r0, d, i, j)
+	//#pragma omp parallel for private(f, dr, r0, d2, i, j)
 	for (j=0; j<n; j++)
 	{
 		f.x = f.y = f.z = 0;
@@ -53,13 +53,13 @@ extern void cpu_update(const uint n, const real m[], v3r r[], v3r v[])
 			dr.x = r[i].x - r0.x;
 			dr.y = r[i].y - r0.y;
 			dr.z = r[i].z - r0.z;
-			d = sqrt(dr.x*dr.x + dr.y*dr.y + dr.z*dr.z);
-			if (d>R)
+			d2 = dr.x*dr.x + dr.y*dr.y + dr.z*dr.z;
+			if (d2>R2)
 			{
-				d = m[i]/(d*d*d);
-				f.x += dr.x * d;
-				f.y += dr.y * d;
-				f.z += dr.z * d;
+				d2 = m[i]/(d2*sqrt(d2));
+				f.x += dr.x * d2;
+				f.y += dr.y * d2;
+				f.z += dr.z * d2;
 			}
 		}
 		r[j].x += dt * (v[j].x + dt2 * f.x);

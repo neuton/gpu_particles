@@ -23,7 +23,13 @@ else
 	endif
 endif
 
-CCFLAGS := $(CCFLAGS) -fopenmp
+ifeq ($(OPENMP), yes)
+	FOPENMP = -fopenmp
+else
+	FOPENMP =
+endif
+
+CCFLAGS := $(CCFLAGS)
 ifneq ($(OS), Windows_NT)
 	CCFLAGS := $(CCFLAGS) -fPIC
 	SHELL = /bin/sh
@@ -43,12 +49,12 @@ endif
 $(LIB).dll: $(LIB).o opencl.o cl_error.o
 	$(ERROR)
 	@echo making $(LIB) ...
-	@$(CC) -shared $(LIB).o opencl.o cl_error.o -o $(LIB).dll -L"$(CLLIB)" -lOpenCL -fopenmp
+	@$(CC) -shared $(LIB).o opencl.o cl_error.o -o $(LIB).dll -L"$(CLLIB)" -lOpenCL $(FOPENMP)
 
 $(LIB).o: $(LIB).c opencl.h Makefile $(MAKEINC)
 	$(ERROR)
 	@echo making $(LIB).o ...
-	@$(CC) $(CCFLAGS) -c -I"$(CLINC)" $(LIB).c -o $(LIB).o
+	@$(CC) $(CCFLAGS) -c -I"$(CLINC)" $(LIB).c -o $(LIB).o $(FOPENMP)
 
 opencl.o: opencl.c opencl.h cl_error.h Makefile $(MAKEINC)
 	$(ERROR)
@@ -63,12 +69,12 @@ cl_error.o: cl_error.c cl_error.h Makefile $(MAKEINC)
 $(TEST).exe: $(TEST).o opencl.o cl_error.o
 	$(ERROR)
 	@echo making $(TEST) ...
-	@$(CC) $(TEST).o opencl.o cl_error.o -o $(TEST).exe -L"$(CLLIB)" -lOpenCL -fopenmp
+	@$(CC) $(TEST).o opencl.o cl_error.o -o $(TEST).exe -L"$(CLLIB)" -lOpenCL $(FOPENMP)
 
 $(TEST).o: $(TEST).c $(LIB).c opencl.h Makefile $(MAKEINC)
 	$(ERROR)
 	@echo making $(TEST).o ...
-	@$(CC) -Wall -O2 -c -I"$(CLINC)" $(TEST).c -o $(TEST).o -fopenmp
+	@$(CC) -Wall -O2 -c -I"$(CLINC)" $(TEST).c -o $(TEST).o $(FOPENMP)
 
 clean:
 	@echo cleaning ...
