@@ -43,7 +43,7 @@ extern void cpu_update(const uint n, const real m[], v3r r[], v3r v[])
 	v3r dr, r0, f;
 	real d2;
 	uint i, j;
-	//#pragma omp parallel for private(f, dr, r0, d2, i, j)
+	#pragma omp parallel for private(f, dr, r0, d2, i, j)
 	for (j=0; j<n; j++)
 	{
 		f.x = f.y = f.z = 0;

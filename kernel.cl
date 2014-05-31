@@ -11,7 +11,7 @@ real sqrlen(v3r r)
 #define R2 1.5	// closest square radius
 
 __kernel __attribute__((reqd_work_group_size(ln, 1, 1)))
-void compute_forces_naive(	__global const v3r * r,
+void compute_forces_global(	__global const v3r * r,
 							__constant const real * m,
 							__global v3r * a)
 {
@@ -50,7 +50,7 @@ void compute_forces(__global const v3r * r,
 			dr = lr[i] - r0;
 			d2 = sqrlen(dr);
 			if (d2>R2)
-				f += dr * lm[i]/(d2*sqrt(d2));// - 2./(d2*d2*sqrt(d2)));
+				f += dr * lm[i]/(d2*sqrt(d2));
 		}
 		if (k==k_end) break;
 		k = (k+ln)%n;
