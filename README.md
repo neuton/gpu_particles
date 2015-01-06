@@ -15,3 +15,5 @@ How to run
 --------------
 make && main.py
 (press [Enter] to start/stop simulation; use mouse/[+]/[-] to change point of view)
+
+![screenshot](https://github.com/neuton/gpu_particles/blob/master/screenshots/Untitled2.png)
